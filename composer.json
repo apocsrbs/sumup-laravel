@@ -1,0 +1,25 @@
+{
+    "name": "apocs/sumup-laravel",
+    "description": "Complete Laravel integration with SumUp REST API",
+    "type": "library",
+    "autoload": {
+        "psr-4": {
+            "Sumup\\Laravel\\": "src/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Sumup\\Laravel\\SumUpServiceProvider"
+            ],
+            "aliases": {
+                "SumUp": "Sumup\\Laravel\\Facades\\SumUp"
+            }
+        }
+    },
+    "require": {
+        "php": "^8.4",
+        "illuminate/support": "^12.0",
+        "illuminate/http": "^12.0"
+    }
+}
