@@ -32,7 +32,7 @@ class SumUpClient
         return new OAuthService($this->clientId, $this->clientSecret, $this->redirectUri);
     }
 
-    public function checkout(?string $accessToken = null): CheckoutService
+    public function checkouts(?string $accessToken = null): CheckoutService
     {
         return new CheckoutService($accessToken, $this->merchantId, $this->apiKey);
     }
