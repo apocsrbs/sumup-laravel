@@ -37,9 +37,27 @@ class HttpClient
 
     protected function get(string $endpoint, array $params = [])
     {
-        return Http::withHeaders($this->getHeaders())
-            ->get($this->baseUrl . $endpoint, $params)
-            ->json();
+        $headers = $this->getHeaders();
+        
+        // Debug request
+        logger()->debug('SumUp API Request', [
+            'method' => 'GET',
+            'endpoint' => $endpoint,
+            'url' => $this->baseUrl . $endpoint,
+            'headers' => $headers,
+            'data' => $params
+        ]);
+
+        $response = Http::withHeaders($this->getHeaders())
+            ->get($this->baseUrl . $endpoint, $params);
+
+        // Debug response
+        logger()->debug('SumUp API Response', [
+            'status' => $response->status(),
+            'body' => $response->json()
+        ]);
+
+        return $response->json();
     }
 
     protected function post(string $endpoint, array $data = [])

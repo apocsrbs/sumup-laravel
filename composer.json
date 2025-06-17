@@ -2,6 +2,13 @@
     "name": "apocs/sumup-laravel",
     "description": "Complete Laravel integration with SumUp REST API",
     "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "René Burow Sørensen",
+            "email": "rene.soerensen@gmail.com"
+        }
+    ],
     "autoload": {
         "psr-4": {
             "Sumup\\Laravel\\": "src/"
