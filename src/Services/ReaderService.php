@@ -30,4 +30,9 @@ class ReaderService extends HttpClient
     {
         return $this->post("/v0.1/merchants/" . $this->merchantId . "/readers/{$reader_id}/checkout", $data);
     }
+
+    public function cancelCheckout($reader_id)
+    {
+        return $this->post("/v0.1/merchants/" . $this->merchantId . "/readers/{$reader_id}/terminate");
+    }
 }
