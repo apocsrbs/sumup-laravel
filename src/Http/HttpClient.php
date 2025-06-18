@@ -4,6 +4,8 @@ namespace Sumup\Laravel\Http;
 
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Http\Client\Response;
+use Sumup\Laravel\Exceptions\SumupApiException;
 
 class HttpClient
 {
@@ -35,67 +37,147 @@ class HttpClient
         return $headers;
     }
 
+    /**
+     * @throws SumupApiException
+     */
     protected function get(string $endpoint, array $params = [])
     {
-        $headers = $this->getHeaders();
-        
-        // Debug request
-        logger()->debug('SumUp API Request', [
-            'method' => 'GET',
-            'endpoint' => $endpoint,
-            'url' => $this->baseUrl . $endpoint,
-            'headers' => $headers,
-            'data' => $params
-        ]);
+        try {
+            $headers = $this->getHeaders();
+            
+            // Debug request
+            logger()->debug('SumUp API Request', [
+                'method' => 'GET',
+                'endpoint' => $endpoint,
+                'url' => $this->baseUrl . $endpoint,
+                'headers' => $headers,
+                'data' => $params
+            ]);
 
-        $response = Http::withHeaders($this->getHeaders())
-            ->get($this->baseUrl . $endpoint, $params);
+            $response = Http::withHeaders($headers)
+                ->get($this->baseUrl . $endpoint, $params)
+                ->throw();
 
-        // Debug response
-        logger()->debug('SumUp API Response', [
-            'status' => $response->status(),
-            'body' => $response->json()
-        ]);
+            // Debug response
+            logger()->debug('SumUp API Response', [
+                'status' => $response->status(),
+                'body' => $response->json()
+            ]);
 
-        return $response->json();
+            return $response->json();
+        } catch (\Illuminate\Http\Client\RequestException $e) {
+            $this->handleRequestException($e);
+            return []; // Dette vil aldrig blive nået, da handleRequestException altid kaster en exception
+        } catch (\Exception $e) {
+            throw new SumupApiException(
+                'Der opstod en uventet fejl ved kommunikation med Sumup API: ' . $e->getMessage()
+            );
+        }
     }
 
+    /**
+     * @throws SumupApiException
+     */
     protected function post(string $endpoint, array $data = [])
     {
-        $headers = $this->getHeaders();
+        try {
+            $headers = $this->getHeaders();
+            
+            // Debug request
+            logger()->debug('SumUp API Request', [
+                'method' => 'POST',
+                'endpoint' => $endpoint,
+                'url' => $this->baseUrl . $endpoint,
+                'headers' => $headers,
+                'data' => $data
+            ]);
+
+            $response = Http::withHeaders($headers)
+                ->post($this->baseUrl . $endpoint, $data)
+                ->throw();
+
+            // Debug response
+            logger()->debug('SumUp API Response', [
+                'status' => $response->status(),
+                'body' => $response->json()
+            ]);
+
+            return $response->json();
+        } catch (\Illuminate\Http\Client\RequestException $e) {
+            $this->handleRequestException($e);
+            return []; // Dette vil aldrig blive nået, da handleRequestException altid kaster en exception
+        } catch (\Exception $e) {
+            throw new SumupApiException(
+                'Der opstod en uventet fejl ved kommunikation med Sumup API: ' . $e->getMessage()
+            );
+        }
+    }
+
+    /**
+     * @throws SumupApiException
+     */
+    protected function put(string $endpoint, array $data = []): array
+    {
+        try {
+            $response = Http::withHeaders($this->getHeaders())
+                ->put($this->baseUrl . $endpoint, $data)
+                ->throw();
+
+            return $response->json();
+        } catch (\Illuminate\Http\Client\RequestException $e) {
+            $this->handleRequestException($e);
+            return []; // Dette vil aldrig blive nået, da handleRequestException altid kaster en exception
+        } catch (\Exception $e) {
+            throw new SumupApiException(
+                'Der opstod en uventet fejl ved kommunikation med Sumup API: ' . $e->getMessage()
+            );
+        }
+    }
+
+    /**
+     * @throws SumupApiException
+     */
+    protected function delete(string $endpoint): array
+    {
+        try {
+            $response = Http::withHeaders($this->getHeaders())
+                ->delete($this->baseUrl . $endpoint)
+                ->throw();
+
+            return $response->json();
+        } catch (\Illuminate\Http\Client\RequestException $e) {
+            $this->handleRequestException($e);
+            return []; // Dette vil aldrig blive nået, da handleRequestException altid kaster en exception
+        } catch (\Exception $e) {
+            throw new SumupApiException(
+                'Der opstod en uventet fejl ved kommunikation med Sumup API: ' . $e->getMessage()
+            );
+        }
+    }
+
+    /**
+     * @throws SumupApiException
+     */
+    private function handleRequestException(\Illuminate\Http\Client\RequestException $e): void
+    {
+        $response = $e->response;
         
-        // Debug request
-        logger()->debug('SumUp API Request', [
-            'method' => 'POST',
-            'endpoint' => $endpoint,
-            'url' => $this->baseUrl . $endpoint,
-            'headers' => $headers,
-            'data' => $data
+        if (!$response instanceof Response) {
+            throw new SumupApiException(
+                'Error communicating with Sumup API: ' . $e->getMessage()
+            );
+        }
+
+        $statusCode = $response->status();
+        $responseData = $response->json() ?? [];
+
+        // Log fejlen
+        logger()->error('SumUp API Error', [
+            'status' => $statusCode,
+            'response' => $responseData,
+            'message' => $e->getMessage()
         ]);
 
-        $response = Http::withHeaders($headers)
-            ->post($this->baseUrl . $endpoint, $data);
-
-        // Debug response
-        logger()->debug('SumUp API Response', [
-            'status' => $response->status(),
-            'body' => $response->json()
-        ]);
-
-        return $response->json();
-    }
-
-    protected function put(string $endpoint, array $data = [])
-    {
-        return Http::withHeaders($this->getHeaders())
-            ->put($this->baseUrl . $endpoint, $data)
-            ->json();
-    }
-
-    protected function delete(string $endpoint)
-    {
-        return Http::withHeaders($this->getHeaders())
-            ->delete($this->baseUrl . $endpoint)
-            ->json();
+        throw SumupApiException::fromResponse($responseData, $statusCode);
     }
 } 
