@@ -3,9 +3,6 @@
 namespace Sumup\Laravel\Services;
 
 use Sumup\Laravel\Http\HttpClient;
-use Sumup\Laravel\DTO\ReaderDTO;
-use Sumup\Laravel\DTO\ReaderCollectionDTO;
-use Sumup\Laravel\DTO\CheckoutDTO;
 use Sumup\Laravel\Exceptions\SumupApiException;
 use Illuminate\Http\Client\Response;
 
@@ -14,12 +11,12 @@ class ReaderService extends HttpClient
     /**
      * @throws SumupApiException
      */
-    public function all(): ReaderCollectionDTO
+    public function all()
     {
         try {
             $response = $this->get('/v0.1/merchants/' . $this->merchantId . '/readers');
 
-            return ReaderCollectionDTO::from($response);
+            return $response;
         } catch (\Exception $e) {
             throw $this->handleException($e);
         }
@@ -28,11 +25,11 @@ class ReaderService extends HttpClient
     /**
      * @throws SumupApiException
      */
-    public function getReader(string $reader_id): ReaderDTO
+    public function getReader(string $reader_id)
     {
         try {
             $response = $this->get("/v0.1/merchants/" . $this->merchantId . "/readers/{$reader_id}");
-            return ReaderDTO::from($response);
+            return $response;
         } catch (\Exception $e) {
             throw $this->handleException($e);
         }
@@ -41,11 +38,11 @@ class ReaderService extends HttpClient
     /**
      * @throws SumupApiException
      */
-    public function create(array $data): ReaderDTO
+    public function create(array $data)
     {
         try {
             $response = $this->post('/v0.1/merchants/' . $this->merchantId . '/readers', $data);
-            return ReaderDTO::from($response);
+            return $response;
         } catch (\Exception $e) {
             throw $this->handleException($e);
         }
@@ -67,7 +64,7 @@ class ReaderService extends HttpClient
     /**
      * @throws SumupApiException
      */
-    public function checkout(string $reader_id, CheckoutDTO $checkoutData): array
+    public function checkout(string $reader_id, $checkoutData): array
     {
         try {
             return $this->post(
