@@ -69,7 +69,7 @@ class ReaderService extends HttpClient
         try {
             return $this->post(
                 "/v0.1/merchants/" . $this->merchantId . "/readers/{$reader_id}/checkout",
-                $checkoutData->toArray()
+                $checkoutData
             );
         } catch (\Exception $e) {
             throw $this->handleException($e);
