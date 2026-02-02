@@ -137,6 +137,27 @@ class HttpClient
     /**
      * @throws SumupApiException
      */
+    protected function patch(string $endpoint, array $data = []): array
+    {
+        try {
+            $response = Http::withHeaders($this->getHeaders())
+                ->patch($this->baseUrl . $endpoint, $data)
+                ->throw();
+
+            return $response->json();
+        } catch (\Illuminate\Http\Client\RequestException $e) {
+            $this->handleRequestException($e);
+            return []; // Dette vil aldrig blive nået, da handleRequestException altid kaster en exception
+        } catch (\Exception $e) {
+            throw new SumupApiException(
+                'Der opstod en uventet fejl ved kommunikation med Sumup API: ' . $e->getMessage()
+            );
+        }
+    }
+
+    /**
+     * @throws SumupApiException
+     */
     protected function delete(string $endpoint): array
     {
         try {

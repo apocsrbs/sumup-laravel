@@ -54,7 +54,7 @@ class ReaderService extends HttpClient
     public function update(string $reader_id, array $data)
     {
         try {
-            $response = $this->put("/v0.1/merchants/" . $this->merchantId . "/readers/{$reader_id}", $data);
+            $response = $this->patch("/v0.1/merchants/" . $this->merchantId . "/readers/{$reader_id}", $data);
             return $response;
         } catch (\Exception $e) {
             throw $this->handleException($e);
