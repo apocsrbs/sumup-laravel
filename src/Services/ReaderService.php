@@ -51,6 +51,19 @@ class ReaderService extends HttpClient
     /**
      * @throws SumupApiException
      */
+    public function update(string $reader_id, array $data)
+    {
+        try {
+            $response = $this->put("/v0.1/merchants/" . $this->merchantId . "/readers/{$reader_id}", $data);
+            return $response;
+        } catch (\Exception $e) {
+            throw $this->handleException($e);
+        }
+    }
+
+    /**
+     * @throws SumupApiException
+     */
     public function destroy(string $reader_id): bool
     {
         try {
