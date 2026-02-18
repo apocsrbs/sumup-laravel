@@ -110,8 +110,10 @@ class ReaderService extends HttpClient
         if ($e instanceof \Illuminate\Http\Client\RequestException) {
             $response = $e->response;
             if ($response instanceof Response) {
+                $responseData = $this->normalizeReaderErrors($response->json() ?? []);
+
                 return SumupApiException::fromResponse(
-                    $response->json() ?? [],
+                    $responseData,
                     $response->status()
                 );
             }
@@ -120,5 +122,24 @@ class ReaderService extends HttpClient
         return new SumupApiException(
             'Error communicating with Sumup API: ' . $e->getMessage()
         );
+    }
+
+    private function normalizeReaderErrors(array $responseData): array
+    {
+        if (isset($responseData['response']) && is_array($responseData['response'])) {
+            $responseData = $responseData['response'];
+        }
+
+        $errors = $responseData['errors'] ?? null;
+
+        if (is_array($errors)) {
+            $detail = $errors['detail'] ?? $errors['message'] ?? $responseData['message'] ?? null;
+
+            if (is_string($detail) && $detail !== '') {
+                $responseData['message'] = $detail;
+            }
+        }
+
+        return $responseData;
     }
 }
