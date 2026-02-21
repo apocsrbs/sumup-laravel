@@ -102,6 +102,16 @@ class ReaderService extends HttpClient
         }
     }
 
+    public function getStatus(string $reader_id): array
+    {
+        try {
+            $response = $this->get("/v0.1/merchants/" . $this->merchantId . "/readers/{$reader_id}/status");
+            return $response;
+        } catch (\Exception $e) {
+            throw $this->handleException($e);
+        }
+    }
+
     /**
      * Håndterer exceptions fra API kald
      */
