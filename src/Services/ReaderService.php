@@ -95,8 +95,11 @@ class ReaderService extends HttpClient
     public function cancelCheckout(string $reader_id): bool
     {
         try {
-            $response = $this->post("/v0.1/merchants/" . $this->merchantId . "/readers/{$reader_id}/terminate");
-            return $response['success'] ?? false;
+            // Terminate svarer 202 med tom body — der er ingen bekræftelse i svaret.
+            // Kaldet er lykkedes hvis der ikke blev kastet en exception.
+            $this->post("/v0.1/merchants/" . $this->merchantId . "/readers/{$reader_id}/terminate");
+
+            return true;
         } catch (\Exception $e) {
             throw $this->handleException($e);
         }
