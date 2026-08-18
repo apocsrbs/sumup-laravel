@@ -120,6 +120,12 @@ class ReaderService extends HttpClient
      */
     private function handleException(\Exception $e): SumupApiException
     {
+        // HttpClient har allerede oversat HTTP-fejlen. Pakker vi den ind igen,
+        // mister vi statuskoden og SumUps egen fejlbesked.
+        if ($e instanceof SumupApiException) {
+            return $e;
+        }
+
         if ($e instanceof \Illuminate\Http\Client\RequestException) {
             $response = $e->response;
             if ($response instanceof Response) {
