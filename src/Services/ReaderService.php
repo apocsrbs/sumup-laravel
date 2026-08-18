@@ -95,8 +95,11 @@ class ReaderService extends HttpClient
     public function cancelCheckout(string $reader_id): bool
     {
         try {
-            $response = $this->post("/v0.1/merchants/" . $this->merchantId . "/readers/{$reader_id}/terminate");
-            return $response['success'] ?? false;
+            // Terminate svarer 202 med tom body — der er ingen bekræftelse i svaret.
+            // Kaldet er lykkedes hvis der ikke blev kastet en exception.
+            $this->post("/v0.1/merchants/" . $this->merchantId . "/readers/{$reader_id}/terminate");
+
+            return true;
         } catch (\Exception $e) {
             throw $this->handleException($e);
         }
@@ -117,6 +120,12 @@ class ReaderService extends HttpClient
      */
     private function handleException(\Exception $e): SumupApiException
     {
+        // HttpClient har allerede oversat HTTP-fejlen. Pakker vi den ind igen,
+        // mister vi statuskoden og SumUps egen fejlbesked.
+        if ($e instanceof SumupApiException) {
+            return $e;
+        }
+
         if ($e instanceof \Illuminate\Http\Client\RequestException) {
             $response = $e->response;
             if ($response instanceof Response) {
